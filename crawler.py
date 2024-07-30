@@ -186,7 +186,6 @@ def google_gen_query_url(
 #     return image_urls
 
 
-
 def get_image_url_from_element(image_element):
     try:
         outer_html = image_element.get_attribute("outerHTML")
@@ -200,7 +199,6 @@ def get_image_url_from_element(image_element):
 
 
 def google_image_url_from_webpage(driver, max_number, quiet=False):
-    thumb_elements_old = []
     thumb_elements = []
     image_count = 0
     image_urls = list()
@@ -274,30 +272,64 @@ def bing_gen_query_url(
     return query_url
 
 
-def bing_image_url_from_webpage(driver):
+# def bing_image_url_from_webpage(driver):
+#     image_urls = list()
+#     time.sleep(10)
+#     img_count = 0
+
+#     while True:
+#         image_elements = driver.find_elements(By.CLASS_NAME, "iusc")
+#         if len(image_elements) > img_count:
+#             img_count = len(image_elements)
+#             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+#         else:
+#             smb = driver.find_elements(By.CLASS_NAME, "btn_seemore")
+#             if len(smb) > 0 and smb[0].is_displayed():
+#                 smb[0].click()
+#             else:
+#                 break
+#         time.sleep(3)
+#     for image_element in image_elements:
+#         m_json_str = image_element.get_attribute("m")
+#         m_json = json.loads(m_json_str)
+#         image_urls.append(m_json["murl"])
+#     return image_urls
+
+
+def bing_image_url_from_webpage(driver, max_number, quiet=False):
+    thumb_elements = []
+    image_count = 0
     image_urls = list()
+    
+    while image_count < max_number:
+        try:
+            thumb_elements = driver.find_elements(By.CLASS_NAME, "iusc")
+            my_print(f"Found {len(thumb_elements)} thumbnails", quiet)
 
-    time.sleep(10)
-    img_count = 0
+            for elem in thumb_elements:
+                try:
+                    m_json_str = elem.get_attribute("m")
+                    m_json = json.loads(m_json_str)
+                    image_urls.append(m_json["murl"])
+                    image_count += 1
+                    if image_count >= max_number:
+                        break
 
-    while True:
-        image_elements = driver.find_elements(By.CLASS_NAME, "iusc")
-        if len(image_elements) > img_count:
-            img_count = len(image_elements)
-            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        else:
-            smb = driver.find_elements(By.CLASS_NAME, "btn_seemore")
-            if len(smb) > 0 and smb[0].is_displayed():
-                smb[0].click()
-            else:
+                except Exception as e:
+                    print(f"Error while clicking thumbnail: {e}")
+                if image_count >= max_number:
+                    break
+            
+            if image_count >= max_number:
                 break
-        time.sleep(3)
-    for image_element in image_elements:
-        m_json_str = image_element.get_attribute("m")
-        m_json = json.loads(m_json_str)
-        image_urls.append(m_json["murl"])
-    return image_urls
+            
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(3)
+        except Exception as e:
+            print(f"Exception: {e}")
+            break
 
+    return image_urls
 
 def bing_get_image_url_using_api(
     keywords, max_number=10000, face_only=False, proxy=None, proxy_type=None
@@ -523,7 +555,7 @@ def crawl_image_urls(
         elif engine == "Bing":
             driver.set_window_size(1920, 1080)
             driver.get(query_url)
-            image_urls = bing_image_url_from_webpage(driver)
+            image_urls = bing_image_url_from_webpage(driver, max_number, quiet)
         else:  # Baidu
             driver.set_window_size(10000, 7500)
             driver.get(query_url)
