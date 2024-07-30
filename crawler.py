@@ -211,9 +211,10 @@ def google_image_url_from_webpage(driver, max_number, quiet=False):
             for elem in thumb_elements:
                 try:
                     if not elem.is_displayed() or not elem.is_enabled():
+                        print(f"skip some:{elem.get_attribute('outerHTML')}")
                         continue
                     elem.click()
-                    time.sleep(0.5)  # Wait for image to load
+                    time.sleep(0.1)  # Wait for image to load
                     image_elements = driver.find_elements(By.CLASS_NAME, "YsLeY")
 
                     for image_element in image_elements:
@@ -224,23 +225,15 @@ def google_image_url_from_webpage(driver, max_number, quiet=False):
                             if image_count >= max_number:
                                 break
                 except Exception as e:
-                    print(f"Error while clicking thumbnail: {e}")
+                    continue
+                    # print(f"Error while clicking thumbnail: {e}")
                 if image_count >= max_number:
                     break
             
             if image_count >= max_number:
                 break
-            
+            print("try to scroll.....")
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "mye4qd")))
-            show_more = driver.find_elements(By.CLASS_NAME, "mye4qd")
-            if (
-                len(show_more) == 1
-                and show_more[0].is_displayed()
-                and show_more[0].is_enabled()
-            ):
-                my_print("Click show_more button.", quiet)
-                show_more[0].click()
             time.sleep(3)
         except Exception as e:
             print(f"Exception: {e}")
@@ -322,7 +315,6 @@ def bing_image_url_from_webpage(driver, max_number, quiet=False):
             
             if image_count >= max_number:
                 break
-            
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             time.sleep(3)
         except Exception as e:
@@ -592,5 +584,5 @@ def crawl_image_urls(
         ),
         quiet,
     )
-
     return image_urls[0:output_num]
+
