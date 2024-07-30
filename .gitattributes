@@ -1,0 +1,2 @@
+chrome_drivers/chromedriver-mac-arm64 filter=lfs diff=lfs merge=lfs -text
+chrome_drivers/chromedriver-mac-x64 filter=lfs diff=lfs merge=lfs -text

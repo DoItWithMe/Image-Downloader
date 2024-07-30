@@ -56,9 +56,9 @@ def main(argv):
         proxy_type = "socks5"
         proxy = args.proxy_socks5
 
-    if not utils.resolve_dependencies(args.driver):
-        print("Dependencies not resolved, exit.")
-        return
+    # if not utils.resolve_dependencies(args.driver):
+    #     print("Dependencies not resolved, exit.")
+    #     return
 
     crawled_urls = crawler.crawl_image_urls(args.keywords,
                                             engine=args.engine, max_number=args.max_number,
