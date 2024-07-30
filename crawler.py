@@ -199,6 +199,7 @@ def get_image_url_from_element(image_element):
 
 
 def google_image_url_from_webpage(driver, max_number, quiet=False):
+    thumb_elements_old = set()
     thumb_elements = []
     image_count = 0
     image_urls = list()
@@ -206,15 +207,17 @@ def google_image_url_from_webpage(driver, max_number, quiet=False):
     while image_count < max_number:
         try:
             thumb_elements = driver.find_elements(By.CLASS_NAME, "mNsIhb")
-            my_print(f"Found {len(thumb_elements)} thumbnails", quiet)
+            new_thumb_elements = [elem for elem in thumb_elements if elem not in thumb_elements_old]
+            my_print(f"Found {len(thumb_elements)} thumbnails, {len(new_thumb_elements)} new_thumb_elements", quiet)
 
-            for elem in thumb_elements:
+            for elem in new_thumb_elements:
                 try:
                     if not elem.is_displayed() or not elem.is_enabled():
                         print(f"skip some:{elem.get_attribute('outerHTML')}")
                         continue
+                    print(f"click some:{elem.get_attribute('outerHTML')}")
                     elem.click()
-                    time.sleep(0.1)  # Wait for image to load
+                    time.sleep(0.3)  # Wait for image to load
                     image_elements = driver.find_elements(By.CLASS_NAME, "YsLeY")
 
                     for image_element in image_elements:
@@ -232,9 +235,21 @@ def google_image_url_from_webpage(driver, max_number, quiet=False):
             
             if image_count >= max_number:
                 break
+
+            thumb_elements_old.update(new_thumb_elements)
             print("try to scroll.....")
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             time.sleep(3)
+
+            try:
+                show_more_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CLASS_NAME, "T7sFge")))
+                show_more_button.click()
+                print("find show more button... click it...")
+                time.sleep(3)
+            except Exception as e:
+                pass
+
+            # time.sleep(3)
         except Exception as e:
             print(f"Exception: {e}")
             break
